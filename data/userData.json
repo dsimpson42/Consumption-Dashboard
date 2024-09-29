@@ -1,0 +1,12 @@
+{
+  "jp.incorvaja@oracle.com": {
+    "neTarget": 1600000,
+    "consumptionBaseline": 1000000,
+    "consumptionGrowthTarget": 500000
+  },
+  "will.gardner@oracle.com": {
+    "neTarget": 160000,
+    "consumptionBaseline": 500000,
+    "consumptionGrowthTarget": 200000
+  }
+}
