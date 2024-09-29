@@ -408,7 +408,7 @@ export default function ConsumptionDashboard() {
       updateExistingSubscriptions(dashboardData.territoryOwnerEmail)
       updateNeFromOsc(dashboardData.territoryOwnerEmail)
       updateNbWorkloads(dashboardData.territoryOwnerEmail)
-    }, [csvData, neCsvData, nbWorkloadsCsvData, dashboardData.territoryOwnerEmail])
+    }, [dashboardData.territoryOwnerEmail, csvData, neCsvData, nbWorkloadsCsvData, updateExistingSubscriptions, updateNeFromOsc, updateNbWorkloads])
 
     const calculateSectionTotal = (data: Subscription[]): { [key: string]: number } => {
       const total: { [key: string]: number } = { total: 0 };
