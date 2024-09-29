@@ -55,17 +55,12 @@ export async function POST(request: NextRequest) {
     // Ensure the data directory exists
     await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
 
-    let data: DataStore = {};
-    try {
-      const fileContent = await fs.readFile(DATA_FILE, 'utf8');
-      data = JSON.parse(fileContent);
-    } catch (readError) {
-      console.log('No existing file or empty file, starting with empty data');
-    }
+    const data = await fs.readFile(DATA_FILE, 'utf8');
+    const dataStore = JSON.parse(data);
 
-    data[email] = { neTarget, consumptionBaseline, consumptionGrowthTarget };
+    dataStore[email] = { neTarget, consumptionBaseline, consumptionGrowthTarget };
 
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+    await fs.writeFile(DATA_FILE, JSON.stringify(dataStore, null, 2));
 
     return NextResponse.json({ message: 'User data saved successfully' });
   } catch (error) {
@@ -92,7 +87,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const fileContent = await fs.readFile(DATA_FILE, 'utf8');
-    let data = JSON.parse(fileContent);
+    const data = JSON.parse(fileContent);
 
     if (data[email]) {
       delete data[email];

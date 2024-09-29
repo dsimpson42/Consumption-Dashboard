@@ -74,41 +74,6 @@ interface ConsumptionCSVRow {
   // Add other fields as necessary
 }
 
-function mapCSVDataToTableFormat(csvData: ConsumptionCSVRow[]) {
-  const monthMap: { [key: string]: string } = {
-    'JAN': 'january', 'FEB': 'february', 'MAR': 'march', 'APR': 'april',
-    'MAY': 'may', 'JUN': 'june', 'JUL': 'july', 'AUG': 'august',
-    'SEP': 'september', 'OCT': 'october', 'NOV': 'november', 'DEC': 'december'
-  };
-
-  return csvData.reduce((acc, row) => {
-    const [, monthAbbr] = row['Fiscal Month'].split('-');
-    const month = monthMap[monthAbbr];
-    if (month) {
-      acc[month] = parseFloat(row['Actual Consumption (k$)']);
-    }
-    return acc;
-  }, {} as { [key: string]: number });
-}
-
-// Add this function at the top of your file, outside the component
-function extractNameFromEmail(email: string): string {
-  const namePart = email.split('@')[0];
-  const nameParts = namePart.split('.');
-  
-  if (nameParts.length === 2) {
-    return `${capitalizeFirstLetter(nameParts[0])} ${capitalizeFirstLetter(nameParts[1])}`;
-  } else if (nameParts.length === 3) {
-    return `${capitalizeFirstLetter(nameParts[0])} ${nameParts[1].toUpperCase()}. ${capitalizeFirstLetter(nameParts[2])}`;
-  } else {
-    return namePart; // Return the original name part if it doesn't match expected formats
-  }
-}
-
-function capitalizeFirstLetter(string: string): string {
-  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
-}
-
 interface DashboardData {
   territoryOwnerEmail: string;
   neTarget: number;
@@ -306,32 +271,6 @@ export default function ConsumptionDashboard() {
         console.error('Error saving user data:', error);
       }
     }, 500);
-
-    const fetchUserData = async (email: string) => {
-      try {
-        const response = await fetch(`/api/userData?email=${encodeURIComponent(email)}`);
-        if (response.ok) {
-          const userData = await response.json();
-          setDashboardData(prevData => ({
-            ...prevData,
-            ...userData,
-            territoryOwnerEmail: email,
-          }));
-        } else if (response.status === 404) {
-          setDashboardData(prevData => ({
-            ...prevData,
-            territoryOwnerEmail: email,
-            neTarget: 0,
-            consumptionBaseline: 0,
-            consumptionGrowthTarget: 0,
-          }));
-        } else {
-          throw new Error('Failed to fetch user data');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
 
     const handleClearData = async () => {
       try {
