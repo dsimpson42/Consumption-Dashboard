@@ -241,7 +241,7 @@ export default function ConsumptionDashboard() {
     setNeFromOsc(newNeFromOsc);
   };
 
-  const handleNonBookingChange = (index: number, field: string, value: string) => {
+  const _handleNonBookingChange = (index: number, field: string, value: string) => {
     const newNonBookingWorkloads = [...nbWorkloads]
     newNonBookingWorkloads[index] = {
       ...newNonBookingWorkloads[index],
@@ -445,7 +445,7 @@ export default function ConsumptionDashboard() {
     return result
   }, [totalConsumptionTarget]);
   
-  type MonthlyData = Record<string, number>;
+  type _MonthlyData = Record<string, number>;
 
   const gapToGoal = useMemo<GapToGoal>(() => {
     const result: GapToGoal = {
@@ -501,11 +501,11 @@ export default function ConsumptionDashboard() {
       }
     }, [])
   
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const _handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setInputValue(e.target.value)
     }
   
-    const handleSubmit = () => {
+    const _handleSubmit = () => {
       onChange(inputValue === '' ? '0' : inputValue)
     }
   
