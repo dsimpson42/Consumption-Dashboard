@@ -187,7 +187,7 @@ export default function ConsumptionDashboard() {
         console.log('Fetched FY25ExistingCommitOpen CSV data:', data.substring(0, 200) + '...') // Log first 200 characters
         setNbWorkloadsCsvData(data)
       } catch (error) {
-        console.error('Error loading FY25ExistingCommitOpen CSV file:', error)
+        console.error('Error loading FY25ExistingCommitOpen CSV file: ', error)
       }
     }
 
