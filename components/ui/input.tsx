@@ -1,10 +1,17 @@
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
 
+// The current interface is causing the error:
+// export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+//   // Add any additional props here
+//   customProp?: string;
+// }
+
+// To fix this, you have two options:
+// We'll use Option 2 to keep the interface with additional props
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  // Add any additional props here
   customProp?: string;
+  // Add any other custom props here if needed
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(

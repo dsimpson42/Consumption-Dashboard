@@ -432,18 +432,25 @@ export default function ConsumptionDashboard() {
     return result
   }, [totalConsumptionTarget]);
   
-  const gapToGoal = useMemo(() => {
-    const result: { [key: string]: number | string } = { 
+  type MonthlyData = Record<string, number>;
+  interface GapToGoal {
+    customer: string;
+    total: number;
+    [key: string]: number | string;
+  }
+
+  const gapToGoal = useMemo<GapToGoal>(() => {
+    const result: GapToGoal = {
+      customer: "Gap to Goal",
       total: totalConsumptionTarget - (totalConsumption.total as number),
-      customer: "Gap to Goal"
-    }
-  
-    months.forEach(month => {
-      result[month] = (totalConsumptionTargetRow as any)[month] - (totalConsumption as any)[month]
-    })
-  
-    return result
-  }, [totalConsumption, totalConsumptionTargetRow, totalConsumptionTarget, months])
+      ...months.reduce((acc, month) => ({
+        ...acc,
+        [month]: (totalConsumptionTargetRow[month] as number) - (totalConsumption[month] as number)
+      }), {} as MonthlyData)
+    };
+
+    return result;
+  }, [totalConsumption, totalConsumptionTargetRow, totalConsumptionTarget, months]);
 
   const neTargetProgress = useMemo(() => {
     if (dashboardData.neTarget === 0) return 0;
