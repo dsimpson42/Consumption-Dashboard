@@ -8,10 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Papa from 'papaparse'
 import { EditableMoneyCell } from "./editable-money-cell"
-import { Package2, DollarSign, TrendingUp, HelpCircle, BarChart3 } from 'lucide-react'
+import { Package2, DollarSign, TrendingUp, BarChart3 } from 'lucide-react'
 
 type CSVRow = {
   [key: string]: string
