@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useRef, useEffect } from "react"
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import debounce from 'lodash.debounce'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -67,12 +67,6 @@ const monthMap = {
 }
 
 const months = ['june', 'july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may']
-
-interface ConsumptionCSVRow {
-  'Fiscal Month': string;
-  'Actual Consumption (k$)': string;
-  // Add other fields as necessary
-}
 
 interface DashboardData {
   territoryOwnerEmail: string;
@@ -225,14 +219,14 @@ export default function ConsumptionDashboard() {
     return parseFloat(numericValue) * 1000
   }
 
-  const handleNeChange = (index: number, field: string, value: string) => {
-    const newNeFromOsc = [...neFromOsc]
+  const handleNeChange = (index: number, field: keyof Subscription, value: string) => {
+    const newNeFromOsc = [...neFromOsc];
     newNeFromOsc[index] = {
       ...newNeFromOsc[index],
       [field]: parseCurrencyInput(value),
-    }
-    setNeFromOsc(newNeFromOsc)
-  }
+    };
+    setNeFromOsc(newNeFromOsc);
+  };
 
   const handleNonBookingChange = (index: number, field: string, value: string) => {
     const newNonBookingWorkloads = [...nbWorkloads]
@@ -292,7 +286,7 @@ export default function ConsumptionDashboard() {
     }
   };
 
-  const updateExistingSubscriptions = (email: string) => {
+  const updateExistingSubscriptions = useCallback((email: string) => {
     if (!csvData) return;
 
     const parsedData = parseCsvData(csvData);
@@ -331,9 +325,9 @@ export default function ConsumptionDashboard() {
 
     console.log('Final subscriptions:', subscriptions);
     setExistingSubscriptions(subscriptions);
-  };
+  }, [csvData]);
 
-  const updateNeFromOsc = (email: string) => {
+  const updateNeFromOsc = useCallback((email: string) => {
     if (!neCsvData) return;
 
     const parsedData = Papa.parse<CSVRow>(neCsvData, { header: true }).data;
@@ -362,19 +356,19 @@ export default function ConsumptionDashboard() {
 
     console.log('Final N/E data:', neData);
     setNeFromOsc(neData);
-  };
+  }, [neCsvData]);
 
-  const updateNbWorkloads = (email: string) => {
+  const updateNbWorkloads = useCallback((email: string) => {
     if (!nbWorkloadsCsvData) {
       console.log('No NB Workloads CSV data available');
       return;
     }
 
     const parsedData = Papa.parse<CSVRow>(nbWorkloadsCsvData, { header: true }).data;
-    console.log('Parsed NB Workloads CSV data:', parsedData.slice(0, 2)); // Log first two rows
+    console.log('Parsed NB Workloads CSV data:', parsedData.slice(0, 2));
 
     const filteredData = parsedData.filter(row => row['Territory Owner E-mail'] === email);
-    console.log('Filtered NB Workloads data:', filteredData.slice(0, 2)); // Log first two rows
+    console.log('Filtered NB Workloads data:', filteredData.slice(0, 2));
 
     const nbWorkloadsData = filteredData.map(row => {
       const customer = row['Customer Name'];
@@ -396,15 +390,15 @@ export default function ConsumptionDashboard() {
       return subscription;
     });
 
-    console.log('Final NB Workloads data:', nbWorkloadsData.slice(0, 2)); // Log first two rows
+    console.log('Final NB Workloads data:', nbWorkloadsData.slice(0, 2));
     setNbWorkloads(nbWorkloadsData);
-  };
+  }, [nbWorkloadsCsvData]);
 
   useEffect(() => {
-    updateExistingSubscriptions(dashboardData.territoryOwnerEmail)
-    updateNeFromOsc(dashboardData.territoryOwnerEmail)
-    updateNbWorkloads(dashboardData.territoryOwnerEmail)
-  }, [dashboardData.territoryOwnerEmail, csvData, neCsvData, nbWorkloadsCsvData, updateExistingSubscriptions, updateNeFromOsc, updateNbWorkloads])
+    updateExistingSubscriptions(dashboardData.territoryOwnerEmail);
+    updateNeFromOsc(dashboardData.territoryOwnerEmail);
+    updateNbWorkloads(dashboardData.territoryOwnerEmail);
+  }, [dashboardData.territoryOwnerEmail, updateExistingSubscriptions, updateNeFromOsc, updateNbWorkloads]);
 
   const calculateSectionTotal = (data: Subscription[]): { [key: string]: number } => {
     const total: { [key: string]: number } = { total: 0 };
