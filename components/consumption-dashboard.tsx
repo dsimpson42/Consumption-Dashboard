@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import debounce from 'lodash.debounce'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import * as TableComponents from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -478,13 +478,13 @@ export default function ConsumptionDashboard() {
   }, [totalConsumption.total, dashboardData.consumptionBaseline, dashboardData.consumptionGrowthTarget]);
 
   const renderSubtotalRow = (total: { [key: string]: number }, label: string) => (
-    <TableRow className="bg-gray-700">
-      <TableCell className="font-bold text-gray-200">{label}</TableCell>
+    <TableComponents.TableRow className="bg-gray-700">
+      <TableComponents.TableCell className="font-bold text-gray-200">{label}</TableComponents.TableCell>
       {months.map(month => (
-        <TableCell key={month} className="text-right text-gray-200">{formatCurrency(total[month])}</TableCell>
+        <TableComponents.TableCell key={month} className="text-right text-gray-200">{formatCurrency(total[month])}</TableComponents.TableCell>
       ))}
-      <TableCell className="font-bold text-right text-gray-200">{formatCurrency(total.total)}</TableCell>
-    </TableRow>
+      <TableComponents.TableCell className="font-bold text-right text-gray-200">{formatCurrency(total.total)}</TableComponents.TableCell>
+    </TableComponents.TableRow>
   );
 
   const InputPopover = ({ value, onChange, label }: InputPopoverProps) => {
@@ -497,14 +497,13 @@ export default function ConsumptionDashboard() {
       }
     }, [])
   
-    // Commented out for future use
-    // const _handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //   setInputValue(e.target.value)
-    // }
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value)
+    }
   
-    // const _handleSubmit = () => {
-    //   onChange(inputValue === '' ? '0' : inputValue)
-    // }
+    const handleSubmit = () => {
+      onChange(inputValue === '' ? '0' : inputValue)
+    }
   
     return (
       <Popover>
@@ -514,7 +513,24 @@ export default function ConsumptionDashboard() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80">
-          {/* Rest of the component remains the same */}
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium leading-none">{label}</h4>
+              <p className="text-sm text-muted-foreground">
+                Enter the new value (in dollars).
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Input
+                ref={inputRef}
+                id="value"
+                value={inputValue}
+                onChange={handleInputChange}
+                className="bg-gray-700 text-gray-100"
+              />
+              <Button onClick={handleSubmit}>Save</Button>
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
     )
@@ -620,41 +636,41 @@ export default function ConsumptionDashboard() {
         </CardHeader>
         <CardContent>
           <div className="w-full overflow-x-auto">
-            <Table className="w-full table-fixed">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-1/6 text-left text-gray-300 sticky left-0 bg-gray-800 z-40">Customer</TableHead>
+            <TableComponents.Table className="w-full table-fixed">
+              <TableComponents.TableHeader>
+                <TableComponents.TableRow>
+                  <TableComponents.TableHead className="w-1/6 text-left text-gray-300 sticky left-0 bg-gray-800 z-40">Customer</TableComponents.TableHead>
                   {months.map((month) => (
-                    <TableHead key={month} className="w-1/14 text-gray-300 text-right">{month.charAt(0).toUpperCase() + month.slice(1, 3)}</TableHead>
+                    <TableComponents.TableHead key={month} className="w-1/14 text-gray-300 text-right">{month.charAt(0).toUpperCase() + month.slice(1, 3)}</TableComponents.TableHead>
                   ))}
-                  <TableHead className="w-1/6 text-gray-300 sticky right-0 bg-gray-800 z-40 text-right">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">Tenancies</TableCell>
-                </TableRow>
+                  <TableComponents.TableHead className="w-1/6 text-gray-300 sticky right-0 bg-gray-800 z-40 text-right">Total</TableComponents.TableHead>
+                </TableComponents.TableRow>
+              </TableComponents.TableHeader>
+              <TableComponents.TableBody>
+                <TableComponents.TableRow>
+                  <TableComponents.TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">Tenancies</TableComponents.TableCell>
+                </TableComponents.TableRow>
                 {existingSubscriptions.map((subscription, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">{subscription.customer}</TableCell>
+                  <TableComponents.TableRow key={index}>
+                    <TableComponents.TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">{subscription.customer}</TableComponents.TableCell>
                     {months.map((month) => (
-                      <TableCell key={month} className="text-gray-300 text-right">
+                      <TableComponents.TableCell key={month} className="text-gray-300 text-right">
                         {formatCurrency(subscription[month] as number)}
-                      </TableCell>
+                      </TableComponents.TableCell>
                     ))}
-                    <TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
+                    <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
                       {formatCurrency(calculateTotal(subscription as Record<string, string | number>))}
-                    </TableCell>
-                  </TableRow>
+                    </TableComponents.TableCell>
+                  </TableComponents.TableRow>
                 ))}
                 {renderSubtotalRow(tenanciesTotal, "YTD Consumption")}
 
-                <TableRow>
-                  <TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">N/E</TableCell>
-                </TableRow>
+                <TableComponents.TableRow>
+                  <TableComponents.TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">N/E</TableComponents.TableCell>
+                </TableComponents.TableRow>
                 {neFromOsc.map((subscription, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">
+                  <TableComponents.TableRow key={index}>
+                    <TableComponents.TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">
                       <div className="flex flex-col space-y-1">
                         <span>{subscription.customer}</span>
                         <div className="flex flex-col">
@@ -670,83 +686,83 @@ export default function ConsumptionDashboard() {
                           <span id={`ne-amount-${index}`} className="text-xs text-gray-300">{formatCurrency(Number(subscription.neAmount) || 0)}</span>
                         </div>
                       </div>
-                    </TableCell>
+                    </TableComponents.TableCell>
                     {months.map((month) => (
-                      <TableCell key={month} className="text-gray-300 p-0">
+                      <TableComponents.TableCell key={month} className="text-gray-300 p-0">
                       <InputPopover
                         value={(subscription as Subscription)[month] as number | undefined}
                         onChange={(value) => handleNeChange(index, month, value)}
                         label={`${subscription.customer} - ${month.charAt(0).toUpperCase() + month.slice(1)}`}
                       />
-                    </TableCell>
+                    </TableComponents.TableCell>
                     ))}
-                    <TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
+                    <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
                       {formatCurrency(calculateTotal(subscription as Record<string, string | number>))}
-                    </TableCell>
-                  </TableRow>
+                    </TableComponents.TableCell>
+                  </TableComponents.TableRow>
                 ))}
                 {renderSubtotalRow(neTotal, "N/E Consumption")}
 
-                <TableRow>
-                  <TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">NB Workloads</TableCell>
-                </TableRow>
+                <TableComponents.TableRow>
+                  <TableComponents.TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">NB Workloads</TableComponents.TableCell>
+                </TableComponents.TableRow>
                 {nbWorkloads.map((subscription, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">
+                  <TableComponents.TableRow key={index}>
+                    <TableComponents.TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">
                       {subscription.customer}
-                    </TableCell>
+                    </TableComponents.TableCell>
                     {months.map((month) => (
-                      <TableCell key={month} className="text-gray-300 p-0">
+                      <TableComponents.TableCell key={month} className="text-gray-300 p-0">
                        <InputPopover
                           value={(subscription as Subscription)[month] as number | undefined}
                           onChange={(value) => handleNeChange(index, month, value)}
                           label={`${subscription.customer} - ${month.charAt(0).toUpperCase() + month.slice(1)}`}
                         />
-                      </TableCell>
+                      </TableComponents.TableCell>
                     ))}
-                    <TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">{formatCurrency(calculateTotal(subscription as Record<string, string | number>))}</TableCell>
-                  </TableRow>
+                    <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">{formatCurrency(calculateTotal(subscription as Record<string, string | number>))}</TableComponents.TableCell>
+                  </TableComponents.TableRow>
                 ))}
                 {renderSubtotalRow(nbWorkloadsTotal, "NB Workload Consumption")}
 
-                <TableRow>
-                  <TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">Modeled Consumption Summary</TableCell>
-                </TableRow>
-                <TableRow className="bg-gray-600 font-bold">
-                  <TableCell className="text-gray-100">Total Modeled Consumption</TableCell>
+                <TableComponents.TableRow>
+                  <TableComponents.TableCell colSpan={14} className="font-bold text-sm text-gray-100 bg-gray-700">Modeled Consumption Summary</TableComponents.TableCell>
+                </TableComponents.TableRow>
+                <TableComponents.TableRow className="bg-gray-600 font-bold">
+                  <TableComponents.TableCell className="text-gray-100">Total Modeled Consumption</TableComponents.TableCell>
                   {months.map(month => (
-                    <TableCell key={month} className="text-gray-100 text-right">{formatCurrency(totalConsumption[month] as number)}</TableCell>
+                    <TableComponents.TableCell key={month} className="text-gray-100 text-right">{formatCurrency(totalConsumption[month] as number)}</TableComponents.TableCell>
                   ))}
-                  <TableCell className="text-gray-100 text-right">{formatCurrency(totalConsumption.total as number)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">
+                  <TableComponents.TableCell className="text-gray-100 text-right">{formatCurrency(totalConsumption.total as number)}</TableComponents.TableCell>
+                </TableComponents.TableRow>
+                <TableComponents.TableRow>
+                  <TableComponents.TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">
                     {totalConsumptionTargetRow.customer}
-                  </TableCell>
+                  </TableComponents.TableCell>
                   {months.map((month) => (
-                    <TableCell key={month} className="text-gray-300 font-bold text-right">
+                    <TableComponents.TableCell key={month} className="text-gray-300 font-bold text-right">
                       {formatCurrency(totalConsumptionTargetRow[month] as number)}
-                    </TableCell>
+                    </TableComponents.TableCell>
                   ))}
-                  <TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
+                  <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
                     {formatCurrency(totalConsumptionTargetRow.total as number)}
-                  </TableCell>
-                </TableRow>
-                <TableRow className="bg-gray-700">
-                  <TableCell className="font-medium text-gray-100 sticky left-0 bg-gray-700 z-20">
+                  </TableComponents.TableCell>
+                </TableComponents.TableRow>
+                <TableComponents.TableRow className="bg-gray-700">
+                  <TableComponents.TableCell className="font-medium text-gray-100 sticky left-0 bg-gray-700 z-20">
                                     {(gapToGoal as GapToGoal).customer}
-                  </TableCell>
+                  </TableComponents.TableCell>
                   {months.map((month) => (
-                    <TableCell key={month} className="text-gray-100 font-bold text-right">
+                    <TableComponents.TableCell key={month} className="text-gray-100 font-bold text-right">
                       {formatCurrency(Number((gapToGoal as GapToGoal)[month]) || 0)}
-                    </TableCell>
+                    </TableComponents.TableCell>
                   ))}
-                  <TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-700 z-20 text-right">
+                  <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-700 z-20 text-right">
                     {formatCurrency(Number((gapToGoal as GapToGoal).total) || 0)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+                  </TableComponents.TableCell>
+                </TableComponents.TableRow>
+              </TableComponents.TableBody>
+            </TableComponents.Table>
           </div>
         </CardContent>
       </Card>
