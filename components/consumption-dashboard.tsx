@@ -241,14 +241,10 @@ export default function ConsumptionDashboard() {
     setNeFromOsc(newNeFromOsc);
   };
 
-  const _handleNonBookingChange = (index: number, field: string, value: string) => {
-    const newNonBookingWorkloads = [...nbWorkloads]
-    newNonBookingWorkloads[index] = {
-      ...newNonBookingWorkloads[index],
-      [field]: parseCurrencyInput(value),
-    }
-    setNbWorkloads(newNonBookingWorkloads)
-  }
+  // Commented out for future use
+  // const _handleNonBookingChange = (index: number, field: keyof Subscription, value: string) => {
+  //   // ... function implementation
+  // };
 
   const handleDataChange = (field: keyof DashboardData, value: number | string) => {
     setDashboardData(prevData => ({
@@ -445,7 +441,7 @@ export default function ConsumptionDashboard() {
     return result
   }, [totalConsumptionTarget]);
   
-  type _MonthlyData = Record<string, number>;
+  //type _MonthlyData = Record<string, number>;
 
   const gapToGoal = useMemo<GapToGoal>(() => {
     const result: GapToGoal = {
@@ -501,13 +497,14 @@ export default function ConsumptionDashboard() {
       }
     }, [])
   
-    const _handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(e.target.value)
-    }
+    // Commented out for future use
+    // const _handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //   setInputValue(e.target.value)
+    // }
   
-    const _handleSubmit = () => {
-      onChange(inputValue === '' ? '0' : inputValue)
-    }
+    // const _handleSubmit = () => {
+    //   onChange(inputValue === '' ? '0' : inputValue)
+    // }
   
     return (
       <Popover>
