@@ -3,13 +3,15 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import debounce from 'lodash.debounce'
 import * as TableComponents from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Papa from 'papaparse'
 import { EditableMoneyCell } from "./editable-money-cell"
+import { Package2, DollarSign, TrendingUp, HelpCircle, BarChart3 } from 'lucide-react'
 
 type CSVRow = {
   [key: string]: string
@@ -151,6 +153,23 @@ export function Separator({ className = '' }: { className?: string }) {
   return <hr className={`border-t ${className}`} />;
 }
 
+function ProgressBar({ value, label, color }: { value: number, label: string, color: string }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between">
+        <span className="text-sm font-medium text-gray-300">{label}</span>
+        <span className="text-sm font-medium text-gray-300">{value.toFixed(1)}%</span>
+      </div>
+      <div className="w-full bg-gray-700 rounded-full h-2.5">
+        <div 
+          className={`h-2.5 rounded-full ${color}`} 
+          style={{ width: `${Math.min(value, 100)}%` }}
+        ></div>
+      </div>
+    </div>
+  )
+}
+
 export default function ConsumptionDashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     territoryOwnerEmail: '',
@@ -165,6 +184,8 @@ export default function ConsumptionDashboard() {
   const [csvData, setCsvData] = useState('');
   const [neCsvData, setNeCsvData] = useState('');
   const [nbWorkloadsCsvData, setNbWorkloadsCsvData] = useState('');
+
+  const [email, setEmail] = useState('')
 
   const totalConsumptionTarget = useMemo(() => {
     return dashboardData.consumptionBaseline + dashboardData.consumptionGrowthTarget
@@ -218,13 +239,13 @@ export default function ConsumptionDashboard() {
     }, 0)
   }
 
-  const formatCurrency = (amount: number): string => {
-    if (amount === 0) return '-'
-    const inK = amount / 1000
-    if (inK >= 1000) {
-      return `${(inK / 1000).toFixed(1).replace(/\.0$/, '')}M`
-    }
-    return `${inK.toFixed(1).replace(/\.0$/, '')}k`
+  const formatMoney = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      notation: 'compact',
+      maximumFractionDigits: 1
+    }).format(amount)
   }
 
   const parseCurrencyInput = (value: string): number => {
@@ -481,14 +502,14 @@ export default function ConsumptionDashboard() {
     <TableComponents.TableRow className="bg-gray-700">
       <TableComponents.TableCell className="font-bold text-gray-200">{label}</TableComponents.TableCell>
       {months.map(month => (
-        <TableComponents.TableCell key={month} className="text-right text-gray-200">{formatCurrency(total[month])}</TableComponents.TableCell>
+        <TableComponents.TableCell key={month} className="text-right text-gray-200">{formatMoney(total[month])}</TableComponents.TableCell>
       ))}
-      <TableComponents.TableCell className="font-bold text-right text-gray-200">{formatCurrency(total.total)}</TableComponents.TableCell>
+      <TableComponents.TableCell className="font-bold text-right text-gray-200">{formatMoney(total.total)}</TableComponents.TableCell>
     </TableComponents.TableRow>
   );
 
   const InputPopover = ({ value, onChange, label }: InputPopoverProps) => {
-    const [inputValue, setInputValue] = useState(value !== undefined ? formatCurrency(value).replace(/[kM]$/, '') : '')
+    const [inputValue, setInputValue] = useState(value !== undefined ? formatMoney(value).replace(/[kM]$/, '') : '')
     const inputRef = useRef<HTMLInputElement>(null)
   
     useEffect(() => {
@@ -509,7 +530,7 @@ export default function ConsumptionDashboard() {
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="ghost" className="w-full h-full p-0 font-normal">
-            {value !== undefined ? formatCurrency(value) : '-'}
+            {value !== undefined ? formatMoney(value) : '-'}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80">
@@ -538,97 +559,96 @@ export default function ConsumptionDashboard() {
 
   console.log('First row data:', existingSubscriptions[0]);
 
-  const formatMoney = (val: number): string => {
-    if (val >= 1000000) {
-      return `$${(val / 1000000).toFixed(1)}M`;
-    } else if (val >= 1000) {
-      return `$${(val / 1000).toFixed(0)}K`;
-    } else {
-      return `$${val.toFixed(0)}`;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-8">
-      <Card className="bg-gray-800 border-gray-700 mb-8">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-100">Territory Consumption Modeling</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="territory-owner-email" className="text-xs font-medium text-gray-400">Territory Owner Email</Label>
-              <Input 
-                id="territory-owner-email" 
-                value={dashboardData.territoryOwnerEmail} 
-                onChange={(e) => handleDataChange('territoryOwnerEmail', e.target.value)}
-                className="mt-1 bg-gray-700 text-gray-100 text-sm" 
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 md:p-8">
+      <header className="mb-8">
+        <div className="flex items-center space-x-4">
+          <Package2 size={32} />
+          <h1 className="text-2xl font-bold">Territory Consumption Modeling</h1>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold text-gray-100">Territory Details</CardTitle>
+            <CardDescription>Update your territory information</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="territory-owner-email" className="text-sm font-medium text-gray-400">Territory Owner Email</Label>
+                <Input 
+                  id="territory-owner-email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 bg-gray-700 text-gray-100 text-sm" 
+                />
+              </div>
+              <Button onClick={() => handleDataChange('territoryOwnerEmail', email)} className="w-full">
+                Update Territory
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold text-gray-100">Targets & Baselines</CardTitle>
+            <CardDescription>Set your financial goals and baselines</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <EditableMoneyCell
+                label="N/E Target"
+                value={dashboardData.neTarget}
+                onChange={(value: number) => handleDataChange('neTarget', value)}
+                icon={<DollarSign size={16} />}
+                tooltip="New and Expansion revenue target"
+              />
+              <EditableMoneyCell
+                label="Consumption Baseline"
+                value={dashboardData.consumptionBaseline}
+                onChange={(value) => handleDataChange('consumptionBaseline', value)}
+                icon={<BarChart3 size={16} />}
+                tooltip="Starting point for consumption"
+              />
+              <EditableMoneyCell
+                label="Consumption Growth Target"
+                value={dashboardData.consumptionGrowthTarget}
+                onChange={(value: number) => handleDataChange('consumptionGrowthTarget', value)}
+                icon={<TrendingUp size={16} />}
+                tooltip="Target for consumption growth"
               />
             </div>
-            <EditableMoneyCell
-              label="N/E Target"
-              value={dashboardData.neTarget}
-              onChange={(value: number) => handleDataChange('neTarget', value)}
-              className="text-gray-200" // Lighter text color
-            />
-            <EditableMoneyCell
-              label="Consumption Baseline"
-              value={dashboardData.consumptionBaseline}
-              onChange={(value) => handleDataChange('consumptionBaseline', value)}
-              className="text-gray-200" // Lighter text color
-            />
-            <EditableMoneyCell
-              label="Consumption Growth Target"
-              value={dashboardData.consumptionGrowthTarget}
-              onChange={(value: number) => handleDataChange('consumptionGrowthTarget', value)}
-              className="text-gray-200" // Lighter text color
-            />
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Total Consumption Target</span>
-              <span className="text-gray-200">{formatMoney(totalConsumptionTarget)}</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Button onClick={handleClearData} className="bg-red-600 hover:bg-red-700">
-              Clear Data
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card className="bg-gray-800 border-gray-700 mb-8">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-100">Progress</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <Label className="text-xs font-medium text-gray-400">N/E Target Progress</Label>
-              <div className="flex items-center mt-2">
-                <div className="w-full bg-gray-700 rounded-full h-2.5 mr-2">
-                  <div 
-                    className="bg-blue-600 h-2.5 rounded-full" 
-                    style={{ width: `${Math.min(neTargetProgress, 100)}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm font-medium text-gray-400">{neTargetProgress.toFixed(1)}%</span>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold text-gray-100">Progress Overview</CardTitle>
+            <CardDescription>Track your performance against targets</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <ProgressBar 
+                value={neTargetProgress} 
+                label="N/E Target Progress" 
+                color="bg-blue-600" 
+              />
+              <ProgressBar 
+                value={consumptionProgress} 
+                label="Consumption Growth Progress" 
+                color="bg-green-600" 
+              />
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-400">Total Consumption Target</span>
+                <span className="text-lg font-bold text-gray-200">{formatMoney(totalConsumptionTarget)}</span>
               </div>
             </div>
-            <div>
-              <Label className="text-xs font-medium text-gray-400">Consumption Growth Progress</Label>
-              <div className="flex items-center mt-2">
-                <div className="w-full bg-gray-700 rounded-full h-2.5 mr-2">
-                  <div 
-                    className="bg-green-600 h-2.5 rounded-full" 
-                    style={{ width: `${Math.min(consumptionProgress, 100)}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm font-medium text-gray-400">{consumptionProgress.toFixed(1)}%</span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="bg-gray-800 border-gray-700 mb-8">
         <CardHeader>
@@ -655,11 +675,11 @@ export default function ConsumptionDashboard() {
                     <TableComponents.TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">{subscription.customer}</TableComponents.TableCell>
                     {months.map((month) => (
                       <TableComponents.TableCell key={month} className="text-gray-300 text-right">
-                        {formatCurrency(subscription[month] as number)}
+                        {formatMoney(subscription[month] as number)}
                       </TableComponents.TableCell>
                     ))}
                     <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
-                      {formatCurrency(calculateTotal(subscription as Record<string, string | number>))}
+                      {formatMoney(calculateTotal(subscription as Record<string, string | number>))}
                     </TableComponents.TableCell>
                   </TableComponents.TableRow>
                 ))}
@@ -683,7 +703,7 @@ export default function ConsumptionDashboard() {
                         </div>
                         <div className="flex flex-col mt-2">
                           <Label htmlFor={`ne-amount-${index}`} className="text-xs font-medium text-gray-400">N/E Amount</Label>
-                          <span id={`ne-amount-${index}`} className="text-xs text-gray-300">{formatCurrency(Number(subscription.neAmount) || 0)}</span>
+                          <span id={`ne-amount-${index}`} className="text-xs text-gray-300">{formatMoney(Number(subscription.neAmount) || 0)}</span>
                         </div>
                       </div>
                     </TableComponents.TableCell>
@@ -697,7 +717,7 @@ export default function ConsumptionDashboard() {
                     </TableComponents.TableCell>
                     ))}
                     <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
-                      {formatCurrency(calculateTotal(subscription as Record<string, string | number>))}
+                      {formatMoney(calculateTotal(subscription as Record<string, string | number>))}
                     </TableComponents.TableCell>
                   </TableComponents.TableRow>
                 ))}
@@ -720,7 +740,7 @@ export default function ConsumptionDashboard() {
                         />
                       </TableComponents.TableCell>
                     ))}
-                    <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">{formatCurrency(calculateTotal(subscription as Record<string, string | number>))}</TableComponents.TableCell>
+                    <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">{formatMoney(calculateTotal(subscription as Record<string, string | number>))}</TableComponents.TableCell>
                   </TableComponents.TableRow>
                 ))}
                 {renderSubtotalRow(nbWorkloadsTotal, "NB Workload Consumption")}
@@ -731,9 +751,9 @@ export default function ConsumptionDashboard() {
                 <TableComponents.TableRow className="bg-gray-600 font-bold">
                   <TableComponents.TableCell className="text-gray-100">Total Modeled Consumption</TableComponents.TableCell>
                   {months.map(month => (
-                    <TableComponents.TableCell key={month} className="text-gray-100 text-right">{formatCurrency(totalConsumption[month] as number)}</TableComponents.TableCell>
+                    <TableComponents.TableCell key={month} className="text-gray-100 text-right">{formatMoney(totalConsumption[month] as number)}</TableComponents.TableCell>
                   ))}
-                  <TableComponents.TableCell className="text-gray-100 text-right">{formatCurrency(totalConsumption.total as number)}</TableComponents.TableCell>
+                  <TableComponents.TableCell className="text-gray-100 text-right">{formatMoney(totalConsumption.total as number)}</TableComponents.TableCell>
                 </TableComponents.TableRow>
                 <TableComponents.TableRow>
                   <TableComponents.TableCell className="font-medium text-gray-200 sticky left-0 bg-gray-800 z-20">
@@ -741,24 +761,23 @@ export default function ConsumptionDashboard() {
                   </TableComponents.TableCell>
                   {months.map((month) => (
                     <TableComponents.TableCell key={month} className="text-gray-300 font-bold text-right">
-                      {formatCurrency(totalConsumptionTargetRow[month] as number)}
+                      {formatMoney(totalConsumptionTargetRow[month] as number)}
                     </TableComponents.TableCell>
                   ))}
                   <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-800 z-20 text-right">
-                    {formatCurrency(totalConsumptionTargetRow.total as number)}
+                    {formatMoney(totalConsumptionTargetRow.total as number)}
                   </TableComponents.TableCell>
                 </TableComponents.TableRow>
                 <TableComponents.TableRow className="bg-gray-700">
                   <TableComponents.TableCell className="font-medium text-gray-100 sticky left-0 bg-gray-700 z-20">
-                                    {(gapToGoal as GapToGoal).customer}
-                  </TableComponents.TableCell>
+                                    {(gapToGoal as GapToGoal).customer}                  </TableComponents.TableCell>
                   {months.map((month) => (
                     <TableComponents.TableCell key={month} className="text-gray-100 font-bold text-right">
-                      {formatCurrency(Number((gapToGoal as GapToGoal)[month]) || 0)}
+                      {formatMoney(Number((gapToGoal as GapToGoal)[month]) || 0)}
                     </TableComponents.TableCell>
                   ))}
                   <TableComponents.TableCell className="font-bold text-gray-100 sticky right-0 bg-gray-700 z-20 text-right">
-                    {formatCurrency(Number((gapToGoal as GapToGoal).total) || 0)}
+                    {formatMoney(Number((gapToGoal as GapToGoal).total) || 0)}
                   </TableComponents.TableCell>
                 </TableComponents.TableRow>
               </TableComponents.TableBody>
@@ -766,6 +785,12 @@ export default function ConsumptionDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="mt-4">
+        <Button onClick={handleClearData} className="bg-red-600 hover:bg-red-700">
+          Clear Data
+        </Button>
+      </div>
     </div>
   )
 }
