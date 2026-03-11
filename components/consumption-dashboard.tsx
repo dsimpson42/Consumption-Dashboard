@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import Papa from 'papaparse'
 import { EditableMoneyCell } from "./editable-money-cell"
 import { Package2, DollarSign, TrendingUp, BarChart3 } from 'lucide-react'
+import EmailSummaryPanel from "./email-summary"
 
 type CSVRow = {
   [key: string]: string
@@ -648,6 +649,8 @@ export default function ConsumptionDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <EmailSummaryPanel />
 
       <Card className="bg-gray-800 border-gray-700 mb-8">
         <CardHeader>
